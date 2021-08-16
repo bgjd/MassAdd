@@ -1,4 +1,5 @@
-from aqt import mw, deckchooser, modelchooser
+from aqt import mw, deckchooser, notetypechooser
+from anki.models import NotetypeId
 from anki.notes import Note
 from aqt.utils import showInfo
 from aqt.qt import *
@@ -26,7 +27,12 @@ class MassAddWindow(QDialog):
         self.text_edit = QTextEdit(mw)
         self.submit_button = QPushButton(mw)
         self.deck_chooser = deckchooser.DeckChooser(mw, self.deck_widget)
-        self.model_chooser = modelchooser.ModelChooser(mw, self.model_widget)
+        defaults = mw.col.defaults_for_adding(
+                       current_review_card=mw.reviewer.card
+        )
+        self.model_chooser = notetypechooser.NotetypeChooser(mw=mw, widget=self.model_widget,
+                                                             starting_notetype_id=NotetypeId(defaults.notetype_id))
+
 
         self.processor_widget = QWidget(mw)
         self.processor_layout = QHBoxLayout(mw)
@@ -72,7 +78,7 @@ class MassAddWindow(QDialog):
 
     def add_current_sentences(self):
         deck_id = self.deck_chooser.selectedId()
-        model_id = self.model_chooser.deck.decks.current()["mid"]
+        model_id = self.model_chooser.selected_notetype_id
         m = mw.col.models.get(model_id)
 
         # Use the first field of note as this is required to be non-blank by anki
